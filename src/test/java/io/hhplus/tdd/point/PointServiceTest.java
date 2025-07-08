@@ -1,6 +1,7 @@
 package io.hhplus.tdd.point;
 
 
+import io.hhplus.tdd.point.repository.PointHistoryRepository;
 import io.hhplus.tdd.point.repository.PointRepository;
 
 //import org.junit.jupiter.api.Assertions;
@@ -28,6 +29,9 @@ public class PointServiceTest {
 
     @Mock
     PointRepository pointRepository;
+
+    @Mock
+    PointHistoryRepository pointHistoryRepository;
 
     @InjectMocks
     PointService pointService;
@@ -133,31 +137,31 @@ public class PointServiceTest {
 
 
     //포인트 사용내역 조회 /point/{id}/histories
-//    @Test
-//    void 포인트_사용내역_조회(){
-//
-//        //given
-//        long userId = 1L;
-//        List<PointHistory> pointHistories = List.of(
-//                new PointHistory(1L, userId, -2000L, TransactionType.USE, System.currentTimeMillis()),
-//                new PointHistory(1L, userId, 5000L, TransactionType.CHARGE, System.currentTimeMillis())
-//        );
-//        Mockito.when(pointHistoryRepository.findByUserId(userId)).thenReturn(pointHistories);
-//
-//        // when
-//        List<PointHistory> result = pointService.getHistories(userId);
-//
-//        // then
-//        assertThat(result).hasSize(2);
-//        assertThat(result.get(0).type()).isEqualTo(TransactionType.USE);
-//        assertThat(result.get(0).amount()).isEqualTo(-2000L);
-//        assertThat(result.get(1).type()).isEqualTo(TransactionType.CHARGE);
-//        assertThat(result.get(1).amount()).isEqualTo(5000L);
-//
-//        // verify
-//        Mockito.verify(pointHistoryRepository).findByUserId(userId);
-//
-//    }
+    @Test
+    void 포인트_사용내역_조회(){
+
+        //given
+        long userId = 1L;
+        List<PointHistory> pointHistories = List.of(
+                new PointHistory(1L, userId, -2000L, TransactionType.USE, System.currentTimeMillis()),
+                new PointHistory(1L, userId, 5000L, TransactionType.CHARGE, System.currentTimeMillis())
+        );
+        Mockito.when(pointHistoryRepository.findByUserId(userId)).thenReturn(pointHistories);
+
+        // when
+        List<PointHistory> result = pointService.getPointHistories(userId);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).type()).isEqualTo(TransactionType.USE);
+        assertThat(result.get(0).amount()).isEqualTo(-2000L);
+        assertThat(result.get(1).type()).isEqualTo(TransactionType.CHARGE);
+        assertThat(result.get(1).amount()).isEqualTo(5000L);
+
+        // verify
+        Mockito.verify(pointHistoryRepository).findByUserId(userId);
+
+    }
 
 
 
