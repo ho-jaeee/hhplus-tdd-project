@@ -2,15 +2,23 @@ package io.hhplus.tdd.point;
 
 
 import io.hhplus.tdd.point.repository.PointRepository;
+
+//import org.junit.jupiter.api.Assertions;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +33,28 @@ public class PointServiceTest {
     PointService pointService;
 
     //포인트 조회 /point/{id}
+    @Test
+    void 포인트_조회(){
+
+        //given
+        long userId = 1L;
+        long existingPoint = 5000L;
+        UserPoint existing = new UserPoint(userId, existingPoint, System.currentTimeMillis());
+        Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(existing));
+
+        // when
+        long result = pointService.getPoint(userId); // 실제 호출
+
+        // then
+        // 결과 검증
+        assertThat(result).isEqualTo(existingPoint);//Stub
+
+        // mock이 실제 호출됐는지 검증
+        Mockito.verify(pointRepository, Mockito.times(1)).findById(userId);
+
+
+    }
+
     //포인트 충전 /point/{id}/charge
     @Test
     void 포인트_충전_증가(){
@@ -37,7 +67,7 @@ public class PointServiceTest {
         UserPoint existing = new UserPoint(userId, existingPoint, now);
         Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(existing));
 
-        // save() 호출 시 그대로 리턴하도록 설정
+             // save() 호출 시 그대로 리턴하도록 설정
         Mockito.when(pointRepository.save(Mockito.any()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -46,19 +76,90 @@ public class PointServiceTest {
         UserPoint result = pointService.pointCharge(userId, chargeAmount);
 
         // then
-        Assertions.assertThat(result.point()).as("기존 포인트에 충전 금액이 더해져야 함")
+        assertThat(result.point()).as("기존 포인트에 충전 금액이 더해져야 함")
                 .isEqualTo(existingPoint + chargeAmount);//Stub
 
-        // findById()가 정확히 1번 호출됐는지 검증
+             // findById()가 정확히 1번 호출됐는지 검증
         Mockito.verify(pointRepository, Mockito.times(1)).findById(userId);
 
-        // save()도 정확히 1번 호출됐는지 검증
+            // save()도 정확히 1번 호출됐는지 검증
         Mockito.verify(pointRepository, Mockito.times(1)).save(Mockito.any(UserPoint.class));
     }
 
     //포인트 사용 /point/{id}/use
-    //포인트 사용내역 조회 /point/{id}/histories
+    @Test
+    void 포인트_사용_감소(){
+
+        //given
+        long userId = 1L;
+        long existingPoint = 5000L;
+        long usingPoint = 2000L;
+        long expectedPoint = 3000L;
+        UserPoint existing = new UserPoint(userId, existingPoint, System.currentTimeMillis());
+        Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(existing));
+
+        // when
+        pointService.usePoint(userId, usingPoint); // 실제 호출
+
+        // then
+        ArgumentCaptor<UserPoint> captor = ArgumentCaptor.forClass(UserPoint.class);
+        Mockito.verify(pointRepository).save(captor.capture());
+
+        UserPoint saved = captor.getValue();
+        assertThat(saved.point()).as("포인트 사용 후 잔액은 기존 - 사용금액이어야 한다")
+                .isEqualTo(expectedPoint);
+
+    }
     //잔고가 부족 할 경우, 포인트 사용은 실패
+    @Test
+    void 포인트_사용_실패_잔고부족() {
+        // given
+        long userId = 1L;
+        long existingPoint = 5000L;
+        long usePoint = 10000L;
+
+        UserPoint existing = new UserPoint(userId, existingPoint, System.currentTimeMillis());
+        Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(existing));
+
+        // when & then
+        assertThatThrownBy(() -> pointService.usePoint(userId, usePoint))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("포인트 부족");
+
+        // verify (저장 안 됐는지 확인도 가능)
+        Mockito.verify(pointRepository, Mockito.never()).save(Mockito.any());
+        //Mockito.verify(pointHistoryRepository, Mockito.never()).save(Mockito.any());
+    }
+
+
+    //포인트 사용내역 조회 /point/{id}/histories
+//    @Test
+//    void 포인트_사용내역_조회(){
+//
+//        //given
+//        long userId = 1L;
+//        List<PointHistory> pointHistories = List.of(
+//                new PointHistory(1L, userId, -2000L, TransactionType.USE, System.currentTimeMillis()),
+//                new PointHistory(1L, userId, 5000L, TransactionType.CHARGE, System.currentTimeMillis())
+//        );
+//        Mockito.when(pointHistoryRepository.findByUserId(userId)).thenReturn(pointHistories);
+//
+//        // when
+//        List<PointHistory> result = pointService.getHistories(userId);
+//
+//        // then
+//        assertThat(result).hasSize(2);
+//        assertThat(result.get(0).type()).isEqualTo(TransactionType.USE);
+//        assertThat(result.get(0).amount()).isEqualTo(-2000L);
+//        assertThat(result.get(1).type()).isEqualTo(TransactionType.CHARGE);
+//        assertThat(result.get(1).amount()).isEqualTo(5000L);
+//
+//        // verify
+//        Mockito.verify(pointHistoryRepository).findByUserId(userId);
+//
+//    }
+
+
 
 
 }
