@@ -9,14 +9,18 @@ import java.util.List;
 @Service
 public class PointService {
 
+    private final PointHistoryService pointHistoryService;
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
 
-    public PointService(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository)   {
+    public PointService(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository,
+                        PointHistoryService pointHistoryService)   {
 
         this.pointRepository = pointRepository;
         this.pointHistoryRepository = pointHistoryRepository;
+        this.pointHistoryService = pointHistoryService;
+
     }
 
 
@@ -33,17 +37,9 @@ public class PointService {
                 System.currentTimeMillis()
         );
 
-
-
         //이력 저장
-        PointHistory history = new PointHistory(
-                0L,
-                userId,
-                amount,
-                TransactionType.CHARGE,
-                System.currentTimeMillis()
-        );
-        pointHistoryRepository.save(history);
+        pointHistoryService.recordCharge(userId, amount);
+
         // 저장 및 반환
         return pointRepository.save(updated);
 
@@ -78,14 +74,9 @@ public class PointService {
 
 
             //이력 저장
-            PointHistory history = new PointHistory(
-                    0L,
-                    userId,
-                    -amount,
-                    TransactionType.USE,
-                    System.currentTimeMillis()
-            );
-            pointHistoryRepository.save(history);
+            pointHistoryService.recordUsage(userId, amount);
+
+
             // 저장 및 반환
             return pointRepository.save(updated);
 

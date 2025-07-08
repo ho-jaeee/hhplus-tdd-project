@@ -6,6 +6,7 @@ import io.hhplus.tdd.point.repository.PointRepository;
 
 //import org.junit.jupiter.api.Assertions;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -33,8 +34,16 @@ public class PointServiceTest {
     @Mock
     PointHistoryRepository pointHistoryRepository;
 
-    @InjectMocks
-    PointService pointService;
+//    @InjectMocks
+      PointService pointService;
+//    @InjectMocks
+      PointHistoryService pointHistoryService;
+
+    @BeforeEach //객체를 수동으로 의존성 주입
+    void setUp() {
+        pointHistoryService = new PointHistoryService(pointHistoryRepository);
+        pointService = new PointService(pointRepository, pointHistoryRepository, pointHistoryService);
+    }
 
     //포인트 조회 /point/{id}
     @Test
