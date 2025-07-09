@@ -1,7 +1,7 @@
 package io.hhplus.tdd.point;
 
-import io.hhplus.tdd.point.repository.PointHistoryRepository;
-import io.hhplus.tdd.point.repository.PointRepository;
+import io.hhplus.tdd.database.PointHistoryTable;
+import io.hhplus.tdd.database.UserPointTable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,54 +10,34 @@ import java.util.List;
 public class PointService {
 
 
-    private final PointRepository pointRepository;
-    private final PointHistoryRepository pointHistoryRepository;
+    private final PointHistoryTable pointHistoryTable;
+    private final UserPointTable userPointTable;
 
-
-    public PointService(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository)   {
-
-        this.pointRepository = pointRepository;
-        this.pointHistoryRepository = pointHistoryRepository;
-
-
+    public PointService(PointHistoryTable pointHistoryTable, UserPointTable userPointTable) {
+        this.pointHistoryTable = pointHistoryTable;
+        this.userPointTable = userPointTable;
     }
 
 
     //포인트 충전
     public UserPoint pointCharge(long userId, long amount) {
 
-        // 사용자 기존 포인트 조회 or 신규 생성
-        UserPoint current = pointRepository.findById(userId)
-                .orElseGet(() -> UserPoint.empty(userId));
+        // 사용자 기존 포인트 조회 or 신규 생성 시 0포인트로 생성함
+        UserPoint current = userPointTable.selectById(userId);
 
+        //0보다 작은 값은 충전 불가
         if(amount <= 0) {
            throw new IllegalArgumentException("충전 금액은 0원보다 커야 합니다.");//이 조건은 컨트롤러에서 하고싶음
-
+        //1000단위로 충전 가능
        } else if (amount%1000 != 0) {
             throw new IllegalArgumentException("충전금액은 1,000원 단위로 충전해주시기 바랍니다.");
-
         } else {
-
-           // 새로운 포인트 객체 생성
-           UserPoint updated = new UserPoint(
-                   current.id(),
-                   current.point() + amount,
-                   System.currentTimeMillis()
-           );
-
-           //이력 저장-별도 클래스로 빼려고 했으나 의존성이 심해짐(테스트 코드 작성 시 번거로움)
-           PointHistory history = new PointHistory(
-                   0L,
-                   userId,
-                   amount,
-                   TransactionType.CHARGE,
-                   System.currentTimeMillis()
-           );
-           pointHistoryRepository.save(history);
-
+           //이력 저장
+           pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, System.currentTimeMillis());
+           //기존 포인트 값에 추가
+           long updatePoint = current.point() + amount;
            // 충전 저장 및 반환
-           return pointRepository.save(updated);
-
+           return userPointTable.insertOrUpdate(userId, updatePoint);
        }
     }
 
@@ -65,8 +45,7 @@ public class PointService {
     public long getPoint(long userId) {
 
         //사용자 정보 조회
-        UserPoint userPoint = pointRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+        UserPoint userPoint = userPointTable.selectById(userId);
 
         // 순수하게 포인트만 리턴
         return userPoint.point();
@@ -75,8 +54,7 @@ public class PointService {
 
     //포인트 사용
     public UserPoint pointUse(long userId, long amount) {
-        UserPoint userPoint = pointRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+        UserPoint userPoint = userPointTable.selectById(userId);
 
         if (userPoint.point() < amount) {
             throw new IllegalArgumentException("포인트 부족");
@@ -85,26 +63,13 @@ public class PointService {
             throw new IllegalArgumentException("사용 금액은 0원보다 커야 합니다.");
 
         } else {
-            UserPoint updated = new UserPoint(
-                    userPoint.id(),
-                    userPoint.point() - amount,
-                    System.currentTimeMillis()
-            );
 
-
-            //이력 저장-별도 클래스로 빼려고 했으나 의존성이 심해짐(테스트 코드 작성 시 번거로움)
-            PointHistory history = new PointHistory(
-                    0L,
-                    userId,
-                    -amount,
-                    TransactionType.USE,
-                    System.currentTimeMillis()
-            );
-            pointHistoryRepository.save(history);
-
-
+            //이력 저장
+            pointHistoryTable.insert(userId, amount, TransactionType.USE, System.currentTimeMillis());
+            //포인트 사용 값 반영
+            long updatePoint = userPoint.point() - amount;
             // 사용 저장 및 반환
-            return pointRepository.save(updated);
+            return userPointTable.insertOrUpdate(userId, updatePoint);
 
         }
     }
@@ -113,7 +78,7 @@ public class PointService {
     public List<PointHistory> getPointHistories(long userId) {
 
         List<PointHistory> userHistories;
-        userHistories = pointHistoryRepository.findByUserId(userId);
+        userHistories = pointHistoryTable.selectAllByUserId(userId);
 
         if(userHistories == null || userHistories.isEmpty()) {
             throw new IllegalArgumentException("포인트 충전/사용 내역이 없습니다.");
