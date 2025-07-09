@@ -34,16 +34,9 @@ public class PointServiceTest {
     @Mock
     PointHistoryRepository pointHistoryRepository;
 
-//    @InjectMocks
-      PointService pointService;
-//    @InjectMocks
-      PointHistoryService pointHistoryService;
+    @InjectMocks
+    PointService pointService;
 
-    @BeforeEach //객체를 수동으로 의존성 주입
-    void setUp() {
-        pointHistoryService = new PointHistoryService(pointHistoryRepository);
-        pointService = new PointService(pointRepository, pointHistoryRepository, pointHistoryService);
-    }
 
     //포인트 조회 /point/{id}
     @Test
@@ -78,11 +71,12 @@ public class PointServiceTest {
         long now = System.currentTimeMillis();
 
         UserPoint existing = new UserPoint(userId, existingPoint, now);
+        // 고정된 ID 1L에 대해 항상 이 UserPoint를 줘야 할 때
         Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(existing));
 
-             // save() 호출 시 그대로 리턴하도록 설정
-        Mockito.when(pointRepository.save(Mockito.any()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        // 저장할 때마다 들어오는 객체가 다를 수 있음 → 그대로 리턴
+       Mockito.when(pointRepository.save(Mockito.any()))
+               .thenAnswer(invocation -> invocation.getArgument(0));
 
 
         // when
@@ -92,10 +86,10 @@ public class PointServiceTest {
         assertThat(result.point()).as("기존 포인트에 충전 금액이 더해져야 함")
                 .isEqualTo(existingPoint + chargeAmount);//Stub
 
-             // findById()가 정확히 1번 호출됐는지 검증
+        // findById()가 정확히 1번 호출됐는지 검증
         Mockito.verify(pointRepository, Mockito.times(1)).findById(userId);
 
-            // save()도 정확히 1번 호출됐는지 검증
+        // save()도 정확히 1번 호출됐는지 검증
         Mockito.verify(pointRepository, Mockito.times(1)).save(Mockito.any(UserPoint.class));
     }
 
@@ -112,7 +106,7 @@ public class PointServiceTest {
         Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(existing));
 
         // when
-        pointService.usePoint(userId, usingPoint); // 실제 호출
+        pointService.pointUse(userId, usingPoint); // 실제 호출
 
         // then
         ArgumentCaptor<UserPoint> captor = ArgumentCaptor.forClass(UserPoint.class);
@@ -123,6 +117,7 @@ public class PointServiceTest {
                 .isEqualTo(expectedPoint);
 
     }
+
     //잔고가 부족 할 경우, 포인트 사용은 실패
     @Test
     void 포인트_사용_실패_잔고부족() {
@@ -135,7 +130,7 @@ public class PointServiceTest {
         Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(existing));
 
         // when & then
-        assertThatThrownBy(() -> pointService.usePoint(userId, usePoint))
+        assertThatThrownBy(() -> pointService.pointUse(userId, usePoint))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("포인트 부족");
 
@@ -172,7 +167,74 @@ public class PointServiceTest {
 
     }
 
+    //포인트 사용, 충전 시 0원 사용은 안된다.(이건 근데 서비스 보다는 controller에서 입력값을 아예 안받는게 더 좋은거 같음(서비스의 분기문이 너무 많아짐)
+    @Test
+    void 포인트_0원_충전_불가(){
+
+        //given
+        long userId = 1L;
+        long chargeAmount = 0L;
+        long now = System.currentTimeMillis();
+
+        UserPoint charging = new UserPoint(userId, chargeAmount, now);
+        Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(charging));
 
 
+        //when/then
+        assertThatThrownBy(()-> pointService.pointCharge(userId, chargeAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("충전 금액은 0원보다 커야 합니다.");
 
+
+        // 저장이 호출되지 않았는지도 검증
+        Mockito.verify(pointRepository, Mockito.never()).save(Mockito.any());
+
+
+    }
+
+    @Test
+    void 포인트_0원_사용_불가(){
+
+        //given
+        long userId = 1L;
+        long useAmount = 0L;
+        long now = System.currentTimeMillis();
+
+        UserPoint charging = new UserPoint(userId, useAmount, now);
+        Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(charging));
+
+
+        //when/then
+        assertThatThrownBy(()-> pointService.pointUse(userId, useAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("사용 금액은 0원보다 커야 합니다.");
+
+
+        // 저장이 호출되지 않았는지도 검증
+        Mockito.verify(pointRepository, Mockito.never()).save(Mockito.any());
+
+
+    }
+
+    //1회 사용, 충전 시 최대 포인트는 100,000원으로 한정(100,000원 이상 입력을 못하게 해야할듯, 이것도 controller가 좋을듯)
+    //포인트 충전은 1,000원 단위로 하는게 좋을듯
+    @Test
+    void 포인트_충전_단위_1000(){
+
+        //given
+        long userId = 1L;
+        long chargeAmount = 15200L;
+        long now = System.currentTimeMillis();
+        UserPoint charging = new UserPoint(userId, chargeAmount, now);
+        Mockito.when(pointRepository.findById(userId)).thenReturn(Optional.of(charging));
+
+        //when/then
+        assertThatThrownBy(()-> pointService.pointCharge(userId, chargeAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("충전금액은 1,000원 단위로 충전해주시기 바랍니다.");
+
+        // 저장이 호출되지 않았는지도 검증
+        Mockito.verify(pointRepository, Mockito.never()).save(Mockito.any());
+
+    }
 }
