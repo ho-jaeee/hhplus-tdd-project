@@ -14,7 +14,7 @@ Step1 TDD 연습해보기 : 커밋 링크
 -->
 서비스(충전, 사용, 조회, 이력조회) : dbf3040(https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55)
 
-통합테스트(스프링부트테스트) :  a2da042
+통합테스트(스프링부트테스트) :  a2da042(https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55#diff-9959d6a20936d4c399f0e57e34d8f5ae5b3eca2a118bfe124fe7fcea30a3d96d)
 
 단위테스트1(Mokito)_메인기능:  dbf3040
 
