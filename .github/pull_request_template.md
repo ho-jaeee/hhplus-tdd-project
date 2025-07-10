@@ -13,8 +13,7 @@ Step1 TDD 연습해보기 : 커밋 링크
 동시성 테스트 코드 : d93ji3
 -->
 서비스(충전, 사용, 조회, 이력조회) : dbf3040(https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55)
-
-단위테스트1(Mokito)_메인기능:  dbf3040(https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55)
+단위테스트1(Mokito)_메인기능: dbf3040(https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55)
 
 단위테스트2(Mokito)_제약조건:  4a5a764(https://github.com/ho-jaeee/hhplus-tdd-project/commit/4a5a764b49a6097d8b7f30af15207eee8a77468d)
 
