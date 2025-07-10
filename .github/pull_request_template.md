@@ -12,12 +12,13 @@ Step1 TDD 연습해보기 : 커밋 링크
 동시성 처리 : c83845
 동시성 테스트 코드 : d93ji3
 -->
-서비스(충전, 사용, 조회, 이력조회) : (dbf3040)[https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55]
-단위테스트1(Mokito)_메인기능: (dbf3040)[https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55]
+서비스(충전, 사용, 조회, 이력조회) : [dbf3040](https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55)
 
-단위테스트2(Mokito)_제약조건:  (4a5a764)[https://github.com/ho-jaeee/hhplus-tdd-project/commit/4a5a764b49a6097d8b7f30af15207eee8a77468d]
+단위테스트1(Mokito)_메인기능: [dbf3040](https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55)
 
-통합테스트(스프링부트테스트) :  (a2da042)[https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55#diff-9959d6a20936d4c399f0e57e34d8f5ae5b3eca2a118bfe124fe7fcea30a3d96d]
+단위테스트2(Mokito)_제약조건:  [4a5a764](https://github.com/ho-jaeee/hhplus-tdd-project/commit/4a5a764b49a6097d8b7f30af15207eee8a77468d)
+
+통합테스트(스프링부트테스트) :  [a2da042](https://github.com/ho-jaeee/hhplus-tdd-project/commit/dbf30402af465a2fbf219e4a08a64b9c2bf83e55#diff-9959d6a20936d4c399f0e57e34d8f5ae5b3eca2a118bfe124fe7fcea30a3d96d)
 
 ---
 ### **리뷰 포인트(질문)**
