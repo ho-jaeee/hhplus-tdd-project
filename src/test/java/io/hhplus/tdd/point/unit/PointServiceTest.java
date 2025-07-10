@@ -113,7 +113,7 @@ public class PointServiceTest {
         UserPoint result = pointService.pointUse(userId, usingPoint);
 
         // then
-        assertThat(result.point()).as("기존 포인트에 충전 금액이 더해져야 함")
+        assertThat(result.point()).as("기존 포인트에 사용 금액이 빼져야 함")
                 .isEqualTo(existingPoint - usingPoint);//Stub
 
         // findById()가 정확히 1번 호출됐는지 검증
