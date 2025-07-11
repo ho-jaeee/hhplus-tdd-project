@@ -22,6 +22,9 @@ Step1 TDD 연습해보기 : 커밋 링크
 
 Github 주소 : [Github](https://github.com/ho-jaeee/hhplus-tdd-project)
 
+저 처음에 다 main으로 해서 브런치 급하게 땃는데...다음 부턴 잘할게요ㅜㅜ 양해부탁드립니다.
+죄송합니다.
+
 ---
 ### **리뷰 포인트(질문)**
 - 리뷰 포인트 1
