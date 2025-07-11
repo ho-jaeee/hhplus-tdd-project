@@ -19,7 +19,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-@SpringBootTest// Mockito가 아닌 스프링을 올려서 하는 테스트
+@SpringBootTest// Mockito가 아닌 스프링을 올려서 하는 테스트 통합테스트
 public class PointIntegrationTest {
 
     @Autowired
